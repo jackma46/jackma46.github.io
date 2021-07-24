@@ -1,0 +1,30 @@
+#scatterplot {  
+    width: 40%;
+    height: 35%;
+    float: left;
+    background: var(--main-bg-color); 
+}
+
+#scatterplot .axislabel {
+    font-family: 'Open Sans', 'sans-serif';
+    font-size: 14px;
+}
+
+
+#scatterplot.xAxis #scatterplot.yAxis text {
+    stroke: var(--main-dark-color);
+}
+
+#scatterplot text {
+    font-family: 'Open Sans', sans-serif;
+    fill: var(--main-dark-color);
+}
+
+#scatterplot line {
+    stroke: var(--main-dark-color);
+}
+
+#scatterplot .domain {
+    stroke: var(--main-dark-color);
+}
+
