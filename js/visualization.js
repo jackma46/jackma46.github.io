@@ -5,7 +5,7 @@ var selectedNode = null,
     sportFilter = "All",
     disciplineFilter = "All",
     eventFilter = "All",
-    yearFilter = {initial: 1896, end: 2012}
+    yearFilter = {initial: 1936, end: 2012}
     currentFilterKeyword = "Sport",
     countryNameDictionary = {},
     iocCodeDictionary = {};
@@ -16,7 +16,7 @@ const eventsColors = d3.scaleOrdinal(d3.schemeSet3),
     countryColors = ["#fb8072", "#ffffb3", "#8dd3c7", "#bebada"];
 
 // array containing the years in which summer olympics occurred
-const years = [1896, 1900, 1904, 1908, 1912, 1920, 1924, 1928, 1932, 1936, 1948, 1952, 1956, 1960, 1964, 1968, 1972, 1976, 1980, 1984, 1988, 1992, 1996, 2000, 2004, 2008, 2012]
+const years = [1936, 1948, 1952, 1956, 1960, 1964, 1968, 1972, 1976, 1980, 1984, 1988, 1992, 1996, 2000, 2004, 2008, 2012]
 
 // animation variables
 const animationTime = 750;
