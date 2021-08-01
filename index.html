@@ -201,7 +201,7 @@
             filteredData = filteredData.map(el => {
                 const container = {};
                 container["Agegroup"] = el.Agegroup;
-                container["Percent_at_one_dose"] = parseFloat(el.Percent_at_least_one_dose) - parseFloat(el.Percent_fully_vaccinated);
+                container["Percent_at_one_dose"] = parseFloat(el.Percent_one_dose) - parseFloat(el.Percent_fully_vaccinated);
                 container["Percent_fully_vaccinated"] = parseFloat(el.Percent_fully_vaccinated);
                 return container;
             })
