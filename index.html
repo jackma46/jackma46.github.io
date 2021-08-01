@@ -1,49 +1,275 @@
 <!DOCTYPE html>
 <html>
-	<head>
-        <meta charset="utf-8">
-		<title>Olympics Visualization</title>
-        <link rel="icon" type="image/png" href="res/favicon.png">
 
-        <link href="https://fonts.googleapis.com/css?family=Montserrat:400,600|Open+Sans:400,600" rel="stylesheet">
+<head>
+    <meta charset="utf-8">
+    <!-- Load d3.js -->
+    <script src="https://d3js.org/d3.v4.js"></script>
+    <script src="https://unpkg.com/d3-simple-slider"></script>
+    <style>
+        .tooltip {
+            position: absolute;
+        }
+    </style>
+</head>
 
-        <script src="js/jquery/jquery-3.3.1.min.js" charset="utf-8"></script>
-
-        <script src="js/d3/d3.min.js" charset="utf-8"></script>
-        <script src="js/d3/d3-tip.js" charset="utf-8"></script>
-
-        <link href="css/visualization.css" rel="stylesheet">
-        <link href="css/timeslider.css" rel="stylesheet">
-        <link href="css/bubblechart.css" rel="stylesheet">
-        <link href="css/worldmap.css" rel="stylesheet">
-        
-	</head>
-    
-    <body>
-
-        <div id="header">
-            <span id="statelabel" class ="unselectable"></span>
-            <div id="timeslider"></div>
-            <span class="subtitle unselectable">Olympics Visualization</span>        
-        </div>
+<body>
+    <!-- Create a div where the graph will take place -->
+    <div id="my_dataviz"></div>
+    <div id="slider-step"></div>
 
 
-        <div id="bubblechart">
-            <div id="back-icon-container">
-                <img id="back-icon" src="res/svg/back.svg">
-                <span id="back-subtitle" class="unselectable"></span>
-            </div>
-        </div>
-        
-        <div id="worldmap"></div>
-        
-        
-        <script src="js/visualization.js"></script>
-        <script src="js/timeslider.js"></script>
-		<script src="js/linechart.js"></script>
-        <script src="js/scatterplot.js"></script>
-        <script src="js/bubblechart.js"></script>
-        <script src="js/worldmap.js"></script>
 
-	</body>
+</body>
+<script>
+
+    // set the dimensions and margins of the graph
+    var margin = { top: 10, right: 30, bottom: 20, left: 50 },
+        width = 460 - margin.left - margin.right,
+        height = 400 - margin.top - margin.bottom;
+
+    // append the svg object to the body of the page
+    var svg = d3.select("#my_dataviz")
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform",
+            "translate(" + margin.left + "," + margin.top + ")");
+
+
+    function convertMonthNumberToName(monthNumber) {
+        switch (monthNumber) {
+            case 0:
+                return "January"
+                break;
+            case 1:
+                return "February"
+                break;
+            case 2:
+                return "March"
+                break;
+            case 3:
+                return "April"
+                break;
+            case 4:
+                return "May"
+                break;
+            case 5:
+                return "June"
+                break;
+            case 6:
+                return "July"
+                break;
+            case 7:
+                return "August"
+                break;
+            case 8:
+                return "September"
+                break;
+            case 9:
+                return "October"
+                break;
+            case 10:
+                return "November"
+                break;
+            case 11:
+                return "December"
+                break;
+            default:
+                return "";
+                break;
+        }
+    }
+
+
+    // Parse the Data
+    d3.csv("./data/vaccines_by_age.csv", function (data) {
+        // d3.csv("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/data_stacked.csv", function (data) {
+
+        // List of subgroups = header of the csv files = soil condition here
+
+        var selectedDate;
+
+
+        var dateRange = data.map(el => el.Date);
+        var dateRangeUnique = dateRange.filter((item, index) => dateRange.indexOf(item) === index)
+
+        dateRangeUnique = dateRangeUnique.map(el => new Date(el));
+
+        dateRangeUnique = dateRangeUnique.sort((a, b) => a > b)
+
+
+
+
+        var sliderStep = d3
+            .sliderBottom()
+            .min(dateRangeUnique[0].getMonth())
+            .max(dateRangeUnique[dateRangeUnique.length - 1].getMonth())
+            .width(300)
+            .ticks(dateRangeUnique.length)
+            .tickFormat(d3.format(".2"))
+            .step(1)
+            .on('onchange', val => {
+                selectedDate = val
+            });
+
+
+
+        var gStep = d3
+            .select('div#slider-step')
+            .append('svg')
+            .attr('width', 500)
+            .attr('height', 100)
+            .append('g')
+            .attr('transform', 'translate(30,30)');
+
+        gStep.call(sliderStep);
+
+
+        // ----------------
+        // Create a tooltip
+        // ----------------
+        var tooltip = d3.select("#my_dataviz")
+            .append("div")
+            .style("opacity", 0)
+            .attr("class", "tooltip")
+            .style("background-color", "white")
+            .style("border", "solid")
+            .style("border-width", "1px")
+            .style("border-radius", "5px")
+            .style("padding", "10px")
+
+        // Three function that change the tooltip when user hover / move / leave a cell
+        var mouseover = function (d) {
+            var subgroupName = d3.select(this.parentNode).datum().key;
+            var subgroupValue = d.data[subgroupName];
+            tooltip
+                .html(subgroupName.split("_").join(" ") + ": " + subgroupValue.toFixed(2) + "%")
+                .style("opacity", 1)
+        }
+        var mousemove = function (d) {
+            tooltip
+                .style("left", (d3.mouse(this)[0] + 90) + "px") // It is important to put the +90: other wise the tooltip is exactly where the point is an it creates a weird effect
+                .style("top", (d3.mouse(this)[1]) + "px")
+        }
+        var mouseleave = function (d) {
+            tooltip
+                .style("opacity", 0)
+        }
+
+        var initialMonthNumber = document.querySelector('.slider .parameter-value text').innerHTML;
+        CreateStackedBarChart(parseInt(initialMonthNumber));
+
+        if (!isNaN(parseInt(initialMonthNumber))) {
+            var monthName = convertMonthNumberToName(parseInt(initialMonthNumber))
+            document.querySelector('.slider .parameter-value text').innerHTML = monthName;
+        }
+
+        document.querySelector('.slider .parameter-value text').addEventListener('DOMSubtreeModified', (event) => {
+            const monthNumber = document.querySelector('.slider .parameter-value text').innerHTML;
+            if (!isNaN(parseInt(monthNumber))) {
+                var monthName = convertMonthNumberToName(parseInt(monthNumber))
+                document.querySelector('.slider .parameter-value text').innerHTML = monthName;
+                CreateStackedBarChart(parseInt(monthNumber));
+            }
+        });
+
+
+
+        document.querySelectorAll('#slider-step .tick text').forEach(el => {
+            var monthNumber = parseInt(el.innerHTML);
+            var monthName = convertMonthNumberToName(parseInt(monthNumber))
+            el.innerHTML = monthName;
+        })
+
+
+
+        function CreateStackedBarChart(monthNumber) {
+            var subgroups = ["Percent_at_one_dose", "Percent_fully_vaccinated"]
+
+            svg.selectAll("g").remove();
+
+            var filteredData = data.filter(el => {
+                let date = new Date(el.Date)
+                let month = date.getMonth();
+                if (month == monthNumber) {
+                    return el;
+                }
+            });
+
+            filteredData = filteredData.map(el => {
+                const container = {};
+                container["Agegroup"] = el.Agegroup;
+                container["Percent_at_one_dose"] = parseFloat(el.Percent_at_least_one_dose) - parseFloat(el.Percent_fully_vaccinated);
+                container["Percent_fully_vaccinated"] = parseFloat(el.Percent_fully_vaccinated);
+                return container;
+            })
+
+            filteredData["columns"] = ["Agegroup", "Percent_at_one_dose", "Percent_fully_vaccinated"];
+
+            // List of groups = species here = value of the first column called group -> I show them on the X axis
+            var groups = d3.map(filteredData, function (d) { return (d.Agegroup) }).keys()
+
+            // Add X axis
+            var x = d3.scaleBand()
+                .domain(groups)
+                .range([0, width])
+                .padding([0.2])
+
+            svg.append("g")
+                .attr("transform", "translate(0," + height + ")")
+                .call(d3.axisBottom(x).tickSizeOuter(0));
+
+            // Add Y axis
+            var y = d3.scaleLinear()
+                .domain([0, 100])
+                .range([height, 0]);
+            svg.append("g")
+                .call(d3.axisLeft(y));
+
+            // color palette = one color per subgroup
+            var color = d3.scaleOrdinal()
+                .domain(subgroups)
+                .range(['#FFA500', 'Red'])
+
+
+            //stack the data? --> stack per subgroup
+            var stackedData = d3.stack()
+                .keys(subgroups)
+                (filteredData)
+
+
+            // Show the bars
+            svg.append("g")
+                .selectAll("g")
+                // Enter in the stack data = loop key per key = group per group
+                .data(stackedData)
+                .enter().append("g")
+                .attr("fill", function (d) {
+                    return color(d.key);
+                })
+                .selectAll("rect")
+                // enter a second time = loop subgroup per subgroup to add all rectangles
+                .data(function (d) {
+                    return d;
+                })
+                .enter().append("rect")
+                .attr("x", function (d) {
+                    return x(d.data.Agegroup);
+                })
+                .attr("y", function (d) { return y(d[1]); })
+                .attr("height", function (d) { return y(d[0]) - y(d[1]); })
+                .attr("width", x.bandwidth())
+                // .attr("stroke", "grey")
+                .on("mouseover", mouseover)
+                .on("mousemove", mousemove)
+                .on("mouseleave", mouseleave)
+        }
+
+
+    })
+
+</script>
+
 </html>
