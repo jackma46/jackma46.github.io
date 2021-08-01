@@ -10,11 +10,17 @@
         .tooltip {
             position: absolute;
         }
+        body{
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+        }
     </style>
 </head>
 
 <body>
     <!-- Create a div where the graph will take place -->
+    <h3 id="title"></h3>
     <div id="my_dataviz"></div>
     <div id="slider-step"></div>
 
@@ -188,6 +194,8 @@
         function CreateStackedBarChart(monthNumber) {
             var subgroups = ["Percent_at_one_dose", "Percent_fully_vaccinated"]
 
+            document.getElementById("title").innerHTML = "Ontario, Canada Vaccination Rate in " +  convertMonthNumberToName(parseInt(monthNumber)) +", 2021" 
+
             svg.selectAll("g").remove();
 
             var filteredData = data.filter(el => {
@@ -201,7 +209,7 @@
             filteredData = filteredData.map(el => {
                 const container = {};
                 container["Agegroup"] = el.Agegroup;
-                container["Percent_at_one_dose"] = parseFloat(el.Percent_one_dose) - parseFloat(el.Percent_fully_vaccinated);
+                container["Percent_at_one_dose"] = parseFloat(el.Percent_at_least_one_dose) - parseFloat(el.Percent_fully_vaccinated);
                 container["Percent_fully_vaccinated"] = parseFloat(el.Percent_fully_vaccinated);
                 return container;
             })
